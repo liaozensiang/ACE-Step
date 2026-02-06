@@ -3,7 +3,7 @@
 * replace torchaudio with soundfile & librosa
 * changed Dockerfile for easier usage
 ## How to run on DGX Spark?
-1. git clone repo
+1. run `git clone https://github.com/liaozensiang/ACE-Step.git && cd ACE-Step `
 2. run `docker compose build`
 3. run `docker compose up`
 4. Go to http://localhost:7865 to use UI
