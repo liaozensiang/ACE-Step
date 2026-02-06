@@ -1,8 +1,7 @@
-
 services:
   &name ace-step:
     build:
-      context: https://github.com/ace-step/ACE-Step.git
+      context: .
       dockerfile: Dockerfile
     container_name: *name
     hostname: *name
@@ -15,19 +14,20 @@ services:
       - ./logs:/app/logs
     environment:
       - ACE_OUTPUT_DIR=/app/outputs
+      - HF_HOME=/app/checkpoints
     # command: python app.py --server_name 0.0.0.0 --port 7865 --share False --bf16 True --torch_compile True --device-id 0
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:7865/"]
+      test: [ "CMD", "curl", "-f", "http://localhost:7865/" ]
       interval: 60s
       timeout: 10s
       retries: 30
       start_period: 3s
     restart: unless-stopped
-    runtime: nvidia
+    # runtime: nvidia
     deploy:
       resources:
         reservations:
           devices:
             - driver: nvidia
               count: all
-              capabilities: ["compute", "utility", "graphics", "video"]
+              capabilities: [ "compute", "utility", "graphics", "video" ]

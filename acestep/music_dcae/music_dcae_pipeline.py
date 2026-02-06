@@ -9,12 +9,13 @@ Apache 2.0 License
 import os
 import torch
 from diffusers import AutoencoderDC
-import torchaudio
+# import torchaudio
 import torchvision.transforms as transforms
 from diffusers.models.modeling_utils import ModelMixin
 from diffusers.loaders import FromOriginalModelMixin
 from diffusers.configuration_utils import ConfigMixin, register_to_config
 from tqdm import tqdm
+from acestep.utils.audio_utils import load_audio, Resample
 
 try:
     from .music_vocoder import ADaMoSHiFiGANV1
@@ -43,7 +44,7 @@ class MusicDCAE(ModelMixin, ConfigMixin, FromOriginalModelMixin):
         if source_sample_rate is None:
             source_sample_rate = 48000
 
-        self.resampler = torchaudio.transforms.Resample(source_sample_rate, 44100)
+        self.resampler = Resample(source_sample_rate, 44100)
 
         self.transform = transforms.Compose(
             [
@@ -60,7 +61,7 @@ class MusicDCAE(ModelMixin, ConfigMixin, FromOriginalModelMixin):
         self.shift_factor = -1.9091
 
     def load_audio(self, audio_path):
-        audio, sr = torchaudio.load(audio_path)
+        audio, sr = load_audio(audio_path)
         if audio.shape[0] == 1:
             audio = audio.repeat(2, 1)
         return audio, sr
@@ -87,7 +88,7 @@ class MusicDCAE(ModelMixin, ConfigMixin, FromOriginalModelMixin):
             sr = 48000
             resampler = self.resampler
         else:
-            resampler = torchaudio.transforms.Resample(sr, 44100).to(device).to(dtype)
+            resampler = Resample(sr, 44100).to(device).to(dtype)
 
         audio = resampler(audios)
 
@@ -130,7 +131,7 @@ class MusicDCAE(ModelMixin, ConfigMixin, FromOriginalModelMixin):
 
             if sr is not None:
                 resampler = (
-                    torchaudio.transforms.Resample(44100, sr)
+                    Resample(44100, sr)
                 )
                 wav = resampler(wav.cpu().float())
             else:
@@ -323,7 +324,7 @@ class MusicDCAE(ModelMixin, ConfigMixin, FromOriginalModelMixin):
             # 3. Resampling (if necessary)
             if final_output_sr != MODEL_INTERNAL_SR and final_wav.numel() > 0:
                 # Resample expects CPU tensor if using torchaudio.transforms on older versions or for some backends
-                resampler = torchaudio.transforms.Resample(
+                resampler = Resample(
                     MODEL_INTERNAL_SR, final_output_sr, dtype=final_wav.dtype
                 )
                 final_wav = resampler(final_wav.cpu()).to(self.device) # Move back to device if needed later
@@ -361,8 +362,8 @@ class MusicDCAE(ModelMixin, ConfigMixin, FromOriginalModelMixin):
 
 
 if __name__ == "__main__":
-
-    audio, sr = torchaudio.load("test.wav")
+    from acestep.utils.audio_utils import save_audio
+    audio, sr = load_audio("test.wav")
     audio_lengths = torch.tensor([audio.shape[1]])
     audios = audio.unsqueeze(0)
 
@@ -378,5 +379,5 @@ if __name__ == "__main__":
     print("latents shape: ", latents.shape)
     print("latent_lengths: ", latent_lengths)
     print("sr: ", sr)
-    torchaudio.save("test_reconstructed.wav", pred_wavs[0], sr)
+    save_audio("test_reconstructed.wav", pred_wavs[0], sr)
     print("test_reconstructed.wav")

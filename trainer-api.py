@@ -1,5 +1,5 @@
 import torch
-import torchaudio
+# import torchaudio
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import Optional
@@ -202,11 +202,12 @@ class InferencePipeline:
         sr, pred_wavs = self.dcae.decode(pred_latents, audio_lengths=audio_lengths, sr=48000)
 
         # Save audio
+        from acestep.utils.audio_utils import save_audio
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         output_dir = "generated_audio"
         os.makedirs(output_dir, exist_ok=True)
         audio_path = f"{output_dir}/generated_{timestamp}_{seed}.wav"
-        torchaudio.save(audio_path, pred_wavs.float().cpu(), sr)
+        save_audio(audio_path, pred_wavs.float().cpu(), sr)
 
         return audio_path, sr, seed
 

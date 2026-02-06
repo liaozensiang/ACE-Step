@@ -6,7 +6,7 @@ from datasets import load_from_disk
 from loguru import logger
 import time
 import traceback
-import torchaudio
+# import torchaudio
 from pathlib import Path
 import re
 from acestep.language_segmentation import LangSegment
@@ -23,7 +23,7 @@ def is_silent_audio(audio_tensor, silence_threshold=0.95):
     Determine if an audio is silent and should be discarded
 
     Args:
-        audio_tensor: torch.Tensor from torchaudio, shape (num_channels, num_samples)
+        audio_tensor: torch.Tensor from load_audio, shape (num_channels, num_samples)
         silence_threshold: Silence threshold ratio, default 0.95 means 95%
 
     Returns:
@@ -77,6 +77,9 @@ class Text2MusicDataset(Dataset):
         shuffle=True,
         minibatch_size=1,
     ):
+        from acestep.utils.audio_utils import load_audio, Resample
+        self.load_audio = load_audio
+        self.Resample = Resample
         """
         Initialize the Text2Music dataset
 
@@ -398,7 +401,7 @@ class Text2MusicDataset(Dataset):
         filename = item["filename"]
         sr = 48000
         try:
-            audio, sr = torchaudio.load(filename)
+            audio, sr = self.load_audio(filename)
         except Exception as e:
             logger.error(f"Failed to load audio {item}: {e}")
             return None
@@ -416,7 +419,7 @@ class Text2MusicDataset(Dataset):
 
         # Resample if needed
         if sr != 48000:
-            audio = torchaudio.transforms.Resample(sr, 48000)(audio)
+            audio = self.Resample(sr, 48000)(audio)
 
         # Clip values to [-1.0, 1.0]
         audio = torch.clamp(audio, -1.0, 1.0)

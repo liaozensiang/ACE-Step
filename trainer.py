@@ -16,7 +16,7 @@ from acestep.schedulers.scheduling_flow_match_euler_discrete import (
 from acestep.text2music_dataset import Text2MusicDataset
 from loguru import logger
 from transformers import AutoModel, Wav2Vec2FeatureExtractor
-import torchaudio
+# import torchaudio
 from diffusers.pipelines.stable_diffusion_3.pipeline_stable_diffusion_3 import (
     retrieve_timesteps,
 )
@@ -123,7 +123,8 @@ class Pipeline(LightningModule):
                     "m-a-p/MERT-v1-330M", trust_remote_code=True, cache_dir=checkpoint_dir
                 ).eval()
             self.mert_model.requires_grad_(False)
-            self.resampler_mert = torchaudio.transforms.Resample(
+            from acestep.utils.audio_utils import Resample
+            self.resampler_mert = Resample(
                 orig_freq=48000, new_freq=24000
             )
             self.processor_mert = Wav2Vec2FeatureExtractor.from_pretrained(
@@ -132,7 +133,7 @@ class Pipeline(LightningModule):
 
             self.hubert_model = AutoModel.from_pretrained("utter-project/mHuBERT-147").eval()
             self.hubert_model.requires_grad_(False)
-            self.resampler_mhubert = torchaudio.transforms.Resample(
+            self.resampler_mhubert = Resample(
                 orig_freq=48000, new_freq=16000
             )
             self.processor_mhubert = Wav2Vec2FeatureExtractor.from_pretrained(

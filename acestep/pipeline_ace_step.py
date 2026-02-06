@@ -46,7 +46,7 @@ from acestep.apg_guidance import (
     cfg_zero_star,
     cfg_double_condition_forward,
 )
-import torchaudio
+# import torchaudio
 from .cpu_offload import cpu_offload
 
 
@@ -1393,13 +1393,17 @@ class ACEStepPipeline:
                 output_path_wav = save_path
 
         target_wav = target_wav.float()
-        backend = "soundfile"
-        if format == "ogg":
-            backend = "sox"
-        logger.info(f"Saving audio to {output_path_wav} using backend {backend}")
-        torchaudio.save(
-            output_path_wav, target_wav, sample_rate=sample_rate, format=format, backend=backend
-        )
+        # backend = "soundfile"
+        # if format == "ogg":
+        #     backend = "sox"
+        logger.info(f"Saving audio to {output_path_wav}")
+        
+        from acestep.utils.audio_utils import save_audio
+        save_audio(output_path_wav, target_wav, sr=sample_rate)
+        
+        # torchaudio.save(
+        #     output_path_wav, target_wav, sample_rate=sample_rate, format=format, backend=backend
+        # )
         return output_path_wav
 
     @cpu_offload("music_dcae")

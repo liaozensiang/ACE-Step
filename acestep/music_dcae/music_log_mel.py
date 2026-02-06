@@ -9,7 +9,7 @@ Apache 2.0 License
 import torch
 import torch.nn as nn
 from torch import Tensor
-from torchaudio.transforms import MelScale
+from acestep.utils.audio_utils import MelScale  # Changed from torchaudio.transforms
 
 
 class LinearSpectrogram(nn.Module):
