@@ -9,7 +9,7 @@ services:
     ports:
       - "7865:7865"
     volumes:
-      - ./checkpoints:/app/checkpoints
+      - ./checkpoints:/root/.cache/ace-step/checkpoints
       - ./outputs:/app/outputs
       - ./logs:/app/logs
     environment:
